@@ -7,6 +7,8 @@ const VERSION = 6;
 const METHODS = {
   getCard: "cardsInfo",
   cardsToNotes: "cardsToNotes",
+  addNote: "addNote",
+  addNotes: "addNotes",
   updateNote: "updateNote",
   notesInfo: "notesInfo",
   fetchDeck: "findCards",
@@ -65,6 +67,54 @@ const METHODS_PARAMS = {
     ...getBaseMethod("notesInfo"),
     params: {
       notes: [id],
+    },
+  }),
+  // note追加
+  // deckName: デッキ名
+  // modelName: モデル名
+  // data: フィールド情報: {Front: string, Back: string, index: string}
+  // tags: タグ
+  addNote: (deckName, modelName, data, tags = []) => ({
+    ...getBaseMethod("addNote"),
+    params: {
+      note: {
+        deckName: deckName,
+        modelName: modelName,
+        fields: {
+          Front: `${data.Front}`,
+          Back: `${data.Back}`,
+          index: `${data.index}`,
+        },
+        options: {
+          // 重複を許可
+          allowDuplicate: true,
+        },
+        tags: tags,
+      },
+    },
+  }),
+  // note追加
+  // deckName: デッキ名
+  // modelName: モデル名
+  // data: フィールド情報: {Front: string, Back: string, index: string}
+  // tags: タグ
+  addNotes: (deckName, modelName, data, tags = []) => ({
+    ...getBaseMethod("addNotes"),
+    params: {
+      notes: data.map((v) => ({
+        deckName: deckName,
+        modelName: modelName,
+        fields: {
+          Front: `${v.Front}`,
+          Back: `${v.Back}`,
+          index: `${v.index}`,
+        },
+        options: {
+          // 重複を許可
+          allowDuplicate: true,
+        },
+        tags: tags,
+      })),
     },
   }),
   // note更新
@@ -130,14 +180,15 @@ const range = (start, end) => {
   return result;
 };
 
-// sample codes
+// sample codes: targetDeckのカードの1~100番目を更新する
 const main = async () => {
+  const targetDeck = "sample";
   // 対象は1 ~ 100番目のカード
   const rangeInfo = range(1, 100);
   // sampleのデッキからカードを取得
   const { result: cardIds } = await fetcher(
     METHODS_PARAMS["fetchDeck"](
-      "sample",
+      targetDeck,
       " " + getSortByIndexKey(createSortByIndex(rangeInfo))
     )
   );
@@ -164,5 +215,17 @@ const main = async () => {
     );
   }
 };
+
+// sample add deck codes
+// const addDeckSample = async () => {
+//   // deck名
+//   const targetDeck = "sample";
+//   await fetcher(
+//   // 配列で追加するデータを渡す
+//     METHODS_PARAMS["addNotes"]("my_words", "Basic", [
+//       { Front: "test", Back: "テスト", index: "1" },
+//     ])
+//   );
+// };
 
 void main();
